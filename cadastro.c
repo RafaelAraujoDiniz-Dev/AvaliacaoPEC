@@ -1,110 +1,138 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+from functools import reduce
 
-#define MAX_PRODUCTS 100
+# ===============================
+# DADOS (ESTADO MUTÁVEL - IMPERATIVO)
+# ===============================
+# Lista global que será modificada ao longo do programa
+produtos = []
 
-typedef struct {
-    int id;
-    char name[50];
-    float price;
-} Product;
+# ===============================
+# FUNÇÕES FUNCIONAIS (PURO / FUNCIONAL)
+# ===============================
 
-Product inventory[MAX_PRODUCTS];
-int productCount = 0;
+# Função pura: não altera estado externo
+def criar_produto(id, nome, preco):
+    return {"id": id, "nome": nome, "preco": preco}
 
-void addProduct();
-void listProducts();
-void searchProduct();
-void deleteProduct();
-void calculateTotalValue();
-void displayMenu();
+# Função pura + uso de filter (ordem superior)
+def buscar_por_id(lista, id):
+    resultado = list(filter(lambda p: p["id"] == id, lista))
+    return resultado[0] if resultado else None
 
-int main() {
-    int choice;
-    do {
-        displayMenu();
-        printf("Choose an option: ");
-        scanf("%d", &choice);
-        switch (choice) {
-            case 1: addProduct(); break;
-            case 2: listProducts(); break;
-            case 3: searchProduct(); break;
-            case 4: deleteProduct(); break;
-            case 5: calculateTotalValue(); break;
-            case 6: printf("Exiting...\n"); break;
-            default: printf("Invalid option, try again.\n");
-        }
-    } while (choice != 6);
-    return 0;
-}
+# Função funcional: retorna NOVA lista (imutabilidade)
+# Uso de map (ordem superior)
+def atualizar_produto(lista, id, novo_nome, novo_preco):
+    return list(map(lambda p: 
+        {"id": id, "nome": novo_nome, "preco": novo_preco} if p["id"] == id else p, lista))
 
-void displayMenu() {
-    printf("\n1. Add Product\n");
-    printf("2. List Products\n");
-    printf("3. Search Product\n");
-    printf("4. Delete Product\n");
-    printf("5. Calculate Total Inventory Value\n");
-    printf("6. Exit\n");
-}
+# Função funcional: retorna nova lista sem modificar a original
+# Uso de filter
+def remover_produto(lista, id):
+    return list(filter(lambda p: p["id"] != id, lista))
 
-void addProduct() {
-    if (productCount >= MAX_PRODUCTS) {
-        printf("Inventory full! Cannot add more products.\n");
-        return;
-    }
-    Product p;
-    printf("Enter product ID: ");
-    scanf("%d", &p.id);
-    printf("Enter product name: ");
-    scanf("%s", p.name);
-    printf("Enter product price: ");
-    scanf("%f", &p.price);
-    inventory[productCount++] = p;
-    printf("Product added successfully!\n");
-}
+# Função funcional: cálculo sem efeitos colaterais
+# Uso de reduce
+def calcular_total(lista):
+    return reduce(lambda acc, p: acc + p["preco"], lista, 0)
 
-void listProducts() {
-    printf("\nProducts in inventory:\n");
-    for (int i = 0; i < productCount; i++) {
-        printf("ID: %d, Name: %s, Price: %.2f\n", inventory[i].id, inventory[i].name, inventory[i].price);
-    }
-}
+# ===============================
+# FUNÇÕES IMPERATIVAS (CONTROLE E ESTADO)
+# ===============================
 
-void searchProduct() {
-    int id;
-    printf("Enter product ID to search: ");
-    scanf("%d", &id);
-    for (int i = 0; i < productCount; i++) {
-        if (inventory[i].id == id) {
-            printf("Found product: ID: %d, Name: %s, Price: %.2f\n", inventory[i].id, inventory[i].name, inventory[i].price);
-            return;
-        }
-    }
-    printf("Product not found.\n");
-}
+# Imperativo: altera diretamente a variável global (efeito colateral)
+def cadastrar():
+    global produtos  # manipulação direta de estado
+    id = int(input("ID: "))         # entrada de dados (efeito colateral)
+    nome = input("Nome: ")
+    preco = float(input("Preço: "))
 
-void deleteProduct() {
-    int id;
-    printf("Enter product ID to delete: ");
-    scanf("%d", &id);
-    for (int i = 0; i < productCount; i++) {
-        if (inventory[i].id == id) {
-            for (int j = i; j < productCount - 1; j++) {
-                inventory[j] = inventory[j + 1];
-            }
-            productCount--;
-            printf("Product deleted successfully!\n");
-            return;
-        }
-    }
-    printf("Product not found.\n");
-}
+    produto = criar_produto(id, nome, preco)  # usa função funcional
+    produtos.append(produto)  # alteração de estado (mutável)
+    print("Produto cadastrado!")  # saída (efeito colateral)
 
-void calculateTotalValue() {
-    float total = 0.0;
-    for (int i = 0; i < productCount; i++) {
-        total += inventory[i].price;
-    }
-    printf("Total inventory value: %.2f\n", total);
-}
+# Imperativo: controle com if + entrada/saída
+def pesquisar():
+    id = int(input("Digite o ID: "))
+    produto = buscar_por_id(produtos, id)
+
+    if produto:  # estrutura de controle
+        print("Encontrado:", produto)
+    else:
+        print("Produto não encontrado.")
+
+# Imperativo + funcional misto
+def atualizar():
+    global produtos
+    id = int(input("ID do produto: "))
+    nome = input("Novo nome: ")
+    preco = float(input("Novo preço: "))
+
+    if buscar_por_id(produtos, id):  # decisão (if)
+        produtos = atualizar_produto(produtos, id, nome, preco)
+        # substitui estado antigo por novo (misto: funcional + imperativo)
+        print("Produto atualizado!")
+    else:
+        print("Produto não encontrado.")
+
+# Imperativo + funcional
+def deletar():
+    global produtos
+    id = int(input("ID do produto: "))
+
+    if buscar_por_id(produtos, id):
+        produtos = remover_produto(produtos, id)
+        print("Produto removido!")
+    else:
+        print("Produto não encontrado.")
+
+# Imperativo: uso de for + saída de dados
+def listar():
+    if not produtos:
+        print("Nenhum produto cadastrado.")
+        return
+
+    print("\nLista de produtos:")
+    for p in produtos:  # loop (imperativo)
+        print(p)
+
+    # cálculo funcional
+    total = calcular_total(produtos)
+    print("Valor total em estoque:", total)
+
+# ===============================
+# MENU (FLUXO IMPERATIVO)
+# ===============================
+
+def menu():
+    while True:  # loop principal (imperativo)
+        print("\n--- SISTEMA DE PRODUTOS ---")
+        print("1 - Cadastrar")
+        print("2 - Pesquisar")
+        print("3 - Atualizar")
+        print("4 - Deletar")
+        print("5 - Listar")
+        print("0 - Sair")
+
+        opcao = input("Escolha: ")
+
+        # Estrutura de decisão (imperativo)
+        if opcao == "1":
+            cadastrar()
+        elif opcao == "2":
+            pesquisar()
+        elif opcao == "3":
+            atualizar()
+        elif opcao == "4":
+            deletar()
+        elif opcao == "5":
+            listar()
+        elif opcao == "0":
+            print("Saindo...")
+            break
+        else:
+            print("Opção inválida!")
+
+# ===============================
+# EXECUÇÃO (SEQUENCIAL - IMPERATIVO)
+# ===============================
+menu()
