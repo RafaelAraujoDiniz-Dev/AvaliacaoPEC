@@ -1,1 +1,163 @@
-#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#define MAX_PRODUTOS 100\n\ntypedef struct {\n    int id;\n    char nome[100];\n    float preco;\n} Produto;\n\nProduto produtos[MAX_PRODUTOS];\nint totalProdutos = 0;\n\nvoid adicionar_produto_imperativo(int id, const char* nome, float preco) {\n    if (totalProdutos < MAX_PRODUTOS) {\n        produtos[totalProdutos].id = id;\n        strncpy(produtos[totalProdutos].nome, nome, 100);\n        produtos[totalProdutos].preco = preco;\n        totalProdutos++;\n        printf("Produto adicionado: %s (ID: %d) - Preço: %.2f\n", nome, id, preco);\n    } else {\n        printf("Erro: Limite de produtos alcançado!\n");\n    }\n}\n\nvoid listar_produtos_imperativo() {\n    printf("Lista de Produtos:\n");\n    for (int i = 0; i < totalProdutos; i++) {\n        printf("ID: %d, Nome: %s, Preço: %.2f\n", produtos[i].id, produtos[i].nome, produtos[i].preco);\n    }\n}\n\nProduto* buscar_produto_imperativo(int id) {\n    for (int i = 0; i < totalProdutos; i++) {\n        if (produtos[i].id == id) {\n            return &produtos[i];\n        }\n    }\n    return NULL;\n}\n\nvoid atualizar_preco_imperativo(int id, float novoPreco) {\n    Produto* produto = buscar_produto_imperativo(id);\n    if (produto) {\n        produto->preco = novoPreco;\n        printf("Preço atualizado para produto ID: %d, Novo Preço: %.2f\n", id, novoPreco);\n    } else {\n        printf("Produto com ID %d não encontrado!\n", id);\n    }\n}\n\nvoid deletar_produto_imperativo(int id) {\n    for (int i = 0; i < totalProdutos; i++) {\n        if (produtos[i].id == id) {\n            for (int j = i; j < totalProdutos - 1; j++) {\n                produtos[j] = produtos[j + 1];\n            }\n            totalProdutos--;\n            printf("Produto com ID %d deletado!\n", id);\n            return;\n        }\n    }\n    printf("Produto com ID %d não encontrado!\n", id);\n}\n\nfloat calcular_total_imperativo() {\n    float total = 0;\n    for (int i = 0; i < totalProdutos; i++) {\n        total += produtos[i].preco;\n    }\n    return total;\n}\n\nvoid menu_imperativo() {\n    int opcao, id;\n    char nome[100];\n    float preco;\n    do {\n        printf("\nMenu:\n1. Adicionar Produto\n2. Listar Produtos\n3. Buscar Produto\n4. Atualizar Preço\n5. Deletar Produto\n6. Calcular Total\n0. Sair\nEscolha uma opção: ");\n        scanf("%d", &opcao);\n        switch(opcao) {\n            case 1: {\n                printf("Digite ID, Nome e Preço: ");\n                scanf("%d %s %f", &id, nome, &preco);\n                adicionar_produto_imperativo(id, nome, preco);\n                break;\n            }\n            case 2: {\n                listar_produtos_imperativo();\n                break;\n            }\n            case 3: {\n                printf("Digite ID do produto: ");\n                scanf("%d", &id);\n                Produto* produto = buscar_produto_imperativo(id);\n                if (produto) {\n                    printf("Produto encontrado: ID: %d, Nome: %s, Preço: %.2f\n", produto->id, produto->nome, produto->preco);\n                } else {\n                    printf("Produto não encontrado!\n");\n                }\n                break;\n            }\n            case 4: {\n                printf("Digite ID e Novo Preço: ");\n                scanf("%d %f", &id, &preco);\n                atualizar_preco_imperativo(id, preco);\n                break;\n            }\n            case 5: {\n                printf("Digite ID do produto para deletar: ");\n                scanf("%d", &id);\n                deletar_produto_imperativo(id);\n                break;\n            }\n            case 6: {\n                float total = calcular_total_imperativo();\n                printf("Total dos preços dos produtos: %.2f\n", total);\n                break;\n            }\n            case 0: {\n                printf("Saindo...\n");\n                break;\n            }\n            default: {\n                printf("Opção inválida!\n");\n            }\n        }\n    } while (opcao != 0);\n}\n\nint main() {\n    menu_imperativo();\n    return 0;\n}\n
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_PRODUTOS 100
+
+typedef struct {
+    int id;
+    char nome[100];
+    float preco;
+} Produto;
+
+Produto produtos[MAX_PRODUTOS];
+int totalProdutos = 0;
+
+void adicionarProduto(int id, const char *nome, float preco) {
+    if (totalProdutos < MAX_PRODUTOS) {
+        produtos[totalProdutos].id = id;
+        strncpy(produtos[totalProdutos].nome, nome, 99);
+        produtos[totalProdutos].nome[99] = '\0';
+        produtos[totalProdutos].preco = preco;
+        totalProdutos++;
+        printf("[OK] Produto adicionado: %s (ID: %d) - Preco: R$ %.2f\n", nome, id, preco);
+    } else {
+        printf("[ERRO] Limite de produtos alcancado!\n");
+    }
+}
+
+void listarProdutos() {
+    if (totalProdutos == 0) {
+        printf("Nenhum produto cadastrado.\n");
+        return;
+    }
+    printf("%-6s %-30s %-12s\n", "ID", "NOME", "PRECO");
+    printf("----------------------------------------------\n");
+    for (int i = 0; i < totalProdutos; i++) {
+        printf("%-6d %-30s R$ %.2f\n",
+               produtos[i].id, produtos[i].nome, produtos[i].preco);
+    }
+}
+
+Produto *buscarProduto(int id) {
+    for (int i = 0; i < totalProdutos; i++) {
+        if (produtos[i].id == id) {
+            return &produtos[i];
+        }
+    }
+    return NULL;
+}
+
+void atualizarPreco(int id, float novoPreco) {
+    Produto *produto = buscarProduto(id);
+    if (produto) {
+        produto->preco = novoPreco;
+        printf("[OK] Preco atualizado: ID=%d, Novo Preco=R$ %.2f\n", id, novoPreco);
+    } else {
+        printf("[AVISO] Produto com ID %d nao encontrado!\n", id);
+    }
+}
+
+void deletarProduto(int id) {
+    for (int i = 0; i < totalProdutos; i++) {
+        if (produtos[i].id == id) {
+            for (int j = i; j < totalProdutos - 1; j++) {
+                produtos[j] = produtos[j + 1];
+            }
+            totalProdutos--;
+            printf("[OK] Produto ID %d deletado!\n", id);
+            return;
+        }
+    }
+    printf("[AVISO] Produto com ID %d nao encontrado!\n", id);
+}
+
+float calcularTotal() {
+    float total = 0;
+    for (int i = 0; i < totalProdutos; i++) {
+        total += produtos[i].preco;
+    }
+    return total;
+}
+
+void menuImperativo() {
+    int opcao, id;
+    char nome[100];
+    float preco;
+
+    do {
+        printf("\n+--------------------------------------+\n");
+        printf("|       PARADIGMA IMPERATIVO           |\n");
+        printf("+--------------------------------------+\n");
+        printf("| 1. Adicionar Produto                 |\n");
+        printf("| 2. Listar Produtos                   |\n");
+        printf("| 3. Buscar Produto                    |\n");
+        printf("| 4. Atualizar Preco                   |\n");
+        printf("| 5. Deletar Produto                   |\n");
+        printf("| 6. Calcular Total                    |\n");
+        printf("| 0. Sair                              |\n");
+        printf("+--------------------------------------+\n");
+        printf("Escolha uma opcao: ");
+        if (scanf("%d", &opcao) != 1) {
+            opcao = -1;
+        }
+        while (getchar() != '\n');
+
+        switch (opcao) {
+            case 1:
+                printf("ID: ");
+                scanf("%d", &id);
+                while (getchar() != '\n');
+                printf("Nome: ");
+                fgets(nome, sizeof(nome), stdin);
+                nome[strcspn(nome, "\n")] = '\0';
+                printf("Preco: R$ ");
+                scanf("%f", &preco);
+                while (getchar() != '\n');
+                adicionarProduto(id, nome, preco);
+                break;
+            case 2:
+                printf("\n--- LISTA DE PRODUTOS ---\n");
+                listarProdutos();
+                break;
+            case 3: {
+                printf("ID do produto: ");
+                scanf("%d", &id);
+                while (getchar() != '\n');
+                Produto *p = buscarProduto(id);
+                if (p) {
+                    printf("[OK] ID=%d | Nome=%s | Preco=R$ %.2f\n",
+                           p->id, p->nome, p->preco);
+                } else {
+                    printf("[AVISO] Produto nao encontrado!\n");
+                }
+                break;
+            }
+            case 4:
+                printf("ID e Novo Preco: ");
+                scanf("%d %f", &id, &preco);
+                while (getchar() != '\n');
+                atualizarPreco(id, preco);
+                break;
+            case 5:
+                printf("ID do produto a deletar: ");
+                scanf("%d", &id);
+                while (getchar() != '\n');
+                deletarProduto(id);
+                break;
+            case 6:
+                printf("Total do estoque: R$ %.2f\n", calcularTotal());
+                break;
+            case 0:
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("[ERRO] Opcao invalida!\n");
+        }
+    } while (opcao != 0);
+}
+
+int main() {
+    menuImperativo();
+    return 0;
+}

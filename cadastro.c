@@ -2,109 +2,241 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_PRODUCTS 100
+#define MAX_PRODUTOS 100
 
 typedef struct {
     int id;
-    char name[50];
-    float price;
-} Product;
+    char nome[100];
+    float preco;
+} Produto;
 
-Product inventory[MAX_PRODUCTS];
-int productCount = 0;
+Produto estoque[MAX_PRODUTOS];
+int totalProdutos = 0;
 
-void addProduct();
-void listProducts();
-void searchProduct();
-void deleteProduct();
-void calculateTotalValue();
-void displayMenu();
+void exibirMenu();
+void adicionarProduto();
+void listarProdutos();
+void buscarProduto();
+void atualizarProduto();
+void deletarProduto();
+void calcularTotalEstoque();
 
 int main() {
-    int choice;
+    int opcao;
     do {
-        displayMenu();
-        printf("Choose an option: ");
-        scanf("%d", &choice);
-        switch (choice) {
-            case 1: addProduct(); break;
-            case 2: listProducts(); break;
-            case 3: searchProduct(); break;
-            case 4: deleteProduct(); break;
-            case 5: calculateTotalValue(); break;
-            case 6: printf("Exiting...\n"); break;
-            default: printf("Invalid option, try again.\n");
+        exibirMenu();
+        printf("Escolha uma opcao: ");
+        if (scanf("%d", &opcao) != 1) {
+            opcao = -1;
         }
-    } while (choice != 6);
+        while (getchar() != '\n');
+        switch (opcao) {
+            case 1: adicionarProduto(); break;
+            case 2: listarProdutos(); break;
+            case 3: buscarProduto(); break;
+            case 4: atualizarProduto(); break;
+            case 5: deletarProduto(); break;
+            case 6: calcularTotalEstoque(); break;
+            case 0: printf("\nSaindo... Ate logo!\n\n"); break;
+            default: printf("\nOpcao invalida! Tente novamente.\n");
+        }
+    } while (opcao != 0);
     return 0;
 }
 
-void displayMenu() {
-    printf("\n1. Add Product\n");
-    printf("2. List Products\n");
-    printf("3. Search Product\n");
-    printf("4. Delete Product\n");
-    printf("5. Calculate Total Inventory Value\n");
-    printf("6. Exit\n");
+void exibirMenu() {
+    printf("\n+--------------------------------------+\n");
+    printf("|   SISTEMA DE CADASTRO DE PRODUTOS    |\n");
+    printf("+--------------------------------------+\n");
+    printf("| 1. Adicionar Produto                 |\n");
+    printf("| 2. Listar Produtos                   |\n");
+    printf("| 3. Buscar Produto por ID             |\n");
+    printf("| 4. Atualizar Produto                 |\n");
+    printf("| 5. Deletar Produto                   |\n");
+    printf("| 6. Calcular Total do Estoque         |\n");
+    printf("| 0. Sair                              |\n");
+    printf("+--------------------------------------+\n");
 }
 
-void addProduct() {
-    if (productCount >= MAX_PRODUCTS) {
-        printf("Inventory full! Cannot add more products.\n");
+void adicionarProduto() {
+    if (totalProdutos >= MAX_PRODUTOS) {
+        printf("\n[ERRO] Estoque cheio! Nao e possivel adicionar mais produtos.\n");
         return;
     }
-    Product p;
-    printf("Enter product ID: ");
-    scanf("%d", &p.id);
-    printf("Enter product name: ");
-    scanf("%s", p.name);
-    printf("Enter product price: ");
-    scanf("%f", &p.price);
-    inventory[productCount++] = p;
-    printf("Product added successfully!\n");
-}
 
-void listProducts() {
-    printf("\nProducts in inventory:\n");
-    for (int i = 0; i < productCount; i++) {
-        printf("ID: %d, Name: %s, Price: %.2f\n", inventory[i].id, inventory[i].name, inventory[i].price);
+    printf("\n--- ADICIONAR PRODUTO ---\n");
+    Produto p;
+
+    printf("ID: ");
+    if (scanf("%d", &p.id) != 1 || p.id <= 0) {
+        printf("[ERRO] ID invalido!\n");
+        while (getchar() != '\n');
+        return;
     }
-}
+    while (getchar() != '\n');
 
-void searchProduct() {
-    int id;
-    printf("Enter product ID to search: ");
-    scanf("%d", &id);
-    for (int i = 0; i < productCount; i++) {
-        if (inventory[i].id == id) {
-            printf("Found product: ID: %d, Name: %s, Price: %.2f\n", inventory[i].id, inventory[i].name, inventory[i].price);
+    /* Verifica se o ID ja existe */
+    for (int i = 0; i < totalProdutos; i++) {
+        if (estoque[i].id == p.id) {
+            printf("[ERRO] Produto com ID %d ja cadastrado!\n", p.id);
             return;
         }
     }
-    printf("Product not found.\n");
+
+    printf("Nome: ");
+    if (fgets(p.nome, sizeof(p.nome), stdin) == NULL || p.nome[0] == '\n') {
+        printf("[ERRO] Nome invalido!\n");
+        return;
+    }
+    p.nome[strcspn(p.nome, "\n")] = '\0';
+
+    printf("Preco: R$ ");
+    if (scanf("%f", &p.preco) != 1 || p.preco < 0) {
+        printf("[ERRO] Preco invalido!\n");
+        while (getchar() != '\n');
+        return;
+    }
+    while (getchar() != '\n');
+
+    estoque[totalProdutos++] = p;
+    printf("[OK] Produto \"%s\" adicionado com sucesso!\n", p.nome);
 }
 
-void deleteProduct() {
+void listarProdutos() {
+    printf("\n--- LISTA DE PRODUTOS (%d cadastrado(s)) ---\n", totalProdutos);
+    if (totalProdutos == 0) {
+        printf("Nenhum produto cadastrado.\n");
+        return;
+    }
+    printf("%-6s %-30s %-12s\n", "ID", "NOME", "PRECO");
+    printf("----------------------------------------------\n");
+    for (int i = 0; i < totalProdutos; i++) {
+        printf("%-6d %-30s R$ %.2f\n",
+               estoque[i].id, estoque[i].nome, estoque[i].preco);
+    }
+    printf("----------------------------------------------\n");
+}
+
+void buscarProduto() {
+    if (totalProdutos == 0) {
+        printf("\nNenhum produto cadastrado.\n");
+        return;
+    }
+
+    printf("\n--- BUSCAR PRODUTO ---\n");
     int id;
-    printf("Enter product ID to delete: ");
-    scanf("%d", &id);
-    for (int i = 0; i < productCount; i++) {
-        if (inventory[i].id == id) {
-            for (int j = i; j < productCount - 1; j++) {
-                inventory[j] = inventory[j + 1];
+    printf("Digite o ID: ");
+    if (scanf("%d", &id) != 1) {
+        printf("[ERRO] ID invalido!\n");
+        while (getchar() != '\n');
+        return;
+    }
+    while (getchar() != '\n');
+
+    for (int i = 0; i < totalProdutos; i++) {
+        if (estoque[i].id == id) {
+            printf("\n[OK] Produto encontrado:\n");
+            printf("  ID:    %d\n", estoque[i].id);
+            printf("  Nome:  %s\n", estoque[i].nome);
+            printf("  Preco: R$ %.2f\n", estoque[i].preco);
+            return;
+        }
+    }
+    printf("[AVISO] Produto com ID %d nao encontrado.\n", id);
+}
+
+void atualizarProduto() {
+    if (totalProdutos == 0) {
+        printf("\nNenhum produto cadastrado.\n");
+        return;
+    }
+
+    printf("\n--- ATUALIZAR PRODUTO ---\n");
+    int id;
+    printf("Digite o ID do produto a atualizar: ");
+    if (scanf("%d", &id) != 1) {
+        printf("[ERRO] ID invalido!\n");
+        while (getchar() != '\n');
+        return;
+    }
+    while (getchar() != '\n');
+
+    for (int i = 0; i < totalProdutos; i++) {
+        if (estoque[i].id == id) {
+            printf("Produto atual: ID=%d | Nome=%s | Preco=R$ %.2f\n",
+                   estoque[i].id, estoque[i].nome, estoque[i].preco);
+
+            printf("Novo nome (Enter para manter \"%s\"): ", estoque[i].nome);
+            char novoNome[100];
+            if (fgets(novoNome, sizeof(novoNome), stdin) != NULL) {
+                novoNome[strcspn(novoNome, "\n")] = '\0';
+                if (novoNome[0] != '\0') {
+                    strncpy(estoque[i].nome, novoNome, sizeof(estoque[i].nome) - 1);
+                    estoque[i].nome[sizeof(estoque[i].nome) - 1] = '\0';
+                }
             }
-            productCount--;
-            printf("Product deleted successfully!\n");
+
+            printf("Novo preco (0 para manter R$ %.2f): R$ ", estoque[i].preco);
+            float novoPreco;
+            if (scanf("%f", &novoPreco) == 1 && novoPreco > 0) {
+                estoque[i].preco = novoPreco;
+            }
+            while (getchar() != '\n');
+
+            printf("[OK] Produto atualizado: ID=%d | Nome=%s | Preco=R$ %.2f\n",
+                   estoque[i].id, estoque[i].nome, estoque[i].preco);
             return;
         }
     }
-    printf("Product not found.\n");
+    printf("[AVISO] Produto com ID %d nao encontrado.\n", id);
 }
 
-void calculateTotalValue() {
-    float total = 0.0;
-    for (int i = 0; i < productCount; i++) {
-        total += inventory[i].price;
+void deletarProduto() {
+    if (totalProdutos == 0) {
+        printf("\nNenhum produto cadastrado.\n");
+        return;
     }
-    printf("Total inventory value: %.2f\n", total);
+
+    printf("\n--- DELETAR PRODUTO ---\n");
+    int id;
+    printf("Digite o ID do produto a deletar: ");
+    if (scanf("%d", &id) != 1) {
+        printf("[ERRO] ID invalido!\n");
+        while (getchar() != '\n');
+        return;
+    }
+    while (getchar() != '\n');
+
+    for (int i = 0; i < totalProdutos; i++) {
+        if (estoque[i].id == id) {
+            printf("Confirma exclusao de \"%s\"? (s/n): ", estoque[i].nome);
+            char confirmacao = getchar();
+            while (getchar() != '\n');
+            if (confirmacao != 's' && confirmacao != 'S') {
+                printf("Exclusao cancelada.\n");
+                return;
+            }
+            for (int j = i; j < totalProdutos - 1; j++) {
+                estoque[j] = estoque[j + 1];
+            }
+            totalProdutos--;
+            printf("[OK] Produto deletado com sucesso!\n");
+            return;
+        }
+    }
+    printf("[AVISO] Produto com ID %d nao encontrado.\n", id);
+}
+
+void calcularTotalEstoque() {
+    printf("\n--- TOTAL DO ESTOQUE ---\n");
+    if (totalProdutos == 0) {
+        printf("Nenhum produto cadastrado.\n");
+        return;
+    }
+    float total = 0.0f;
+    for (int i = 0; i < totalProdutos; i++) {
+        total += estoque[i].preco;
+    }
+    printf("Total de produtos: %d\n", totalProdutos);
+    printf("Valor total do estoque: R$ %.2f\n", total);
 }
