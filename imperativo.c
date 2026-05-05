@@ -106,13 +106,21 @@ void menuImperativo() {
         switch (opcao) {
             case 1:
                 printf("ID: ");
-                scanf("%d", &id);
+                if (scanf("%d", &id) != 1) {
+                    printf("[ERRO] ID invalido!\n");
+                    while (getchar() != '\n');
+                    break;
+                }
                 while (getchar() != '\n');
                 printf("Nome: ");
                 fgets(nome, sizeof(nome), stdin);
                 nome[strcspn(nome, "\n")] = '\0';
                 printf("Preco: R$ ");
-                scanf("%f", &preco);
+                if (scanf("%f", &preco) != 1) {
+                    printf("[ERRO] Preco invalido!\n");
+                    while (getchar() != '\n');
+                    break;
+                }
                 while (getchar() != '\n');
                 adicionarProduto(id, nome, preco);
                 break;
@@ -122,7 +130,11 @@ void menuImperativo() {
                 break;
             case 3: {
                 printf("ID do produto: ");
-                scanf("%d", &id);
+                if (scanf("%d", &id) != 1) {
+                    printf("[ERRO] ID invalido!\n");
+                    while (getchar() != '\n');
+                    break;
+                }
                 while (getchar() != '\n');
                 Produto *p = buscarProduto(id);
                 if (p) {
@@ -135,13 +147,21 @@ void menuImperativo() {
             }
             case 4:
                 printf("ID e Novo Preco: ");
-                scanf("%d %f", &id, &preco);
+                if (scanf("%d %f", &id, &preco) != 2) {
+                    printf("[ERRO] Entrada invalida!\n");
+                    while (getchar() != '\n');
+                    break;
+                }
                 while (getchar() != '\n');
                 atualizarPreco(id, preco);
                 break;
             case 5:
                 printf("ID do produto a deletar: ");
-                scanf("%d", &id);
+                if (scanf("%d", &id) != 1) {
+                    printf("[ERRO] ID invalido!\n");
+                    while (getchar() != '\n');
+                    break;
+                }
                 while (getchar() != '\n');
                 deletarProduto(id);
                 break;
