@@ -157,5 +157,6 @@ O projeto permitiu comparar na prática os paradigmas imperativo e funcional. O 
 
 ## Autor
 
-Rafael Araujo Diniz
-RAYNARA RIBEIRO ALVES
+Rafael Araujo Diniz e Raynara Ribeiro Alves
+
+
